@@ -339,7 +339,7 @@ public:
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
                     return 2 * IN_MILLISECONDS;
                 case 3:
-                    Talk(3);
+                    Talk(3, playerWhoStartedAshbringer);
                     return 10 * IN_MILLISECONDS;
                 case 4:
                     me->SummonCreature(NPC_HIGHLORD_MOGRAINE, 1065.130737f, 1399.350586f, 30.763723f, 6.282961f, TEMPSUMMON_TIMED_DESPAWN, 400000)->SetName("Highlord Mograine");
@@ -426,6 +426,7 @@ public:
                         me->SetSheath(SHEATH_STATE_UNARMED);
                         me->SetStandState(UNIT_STAND_STATE_KNEEL);
                         me->SetFacingToObject(player);
+                        playerWhoStartedAshbringer = player;
                         SayAshbringer = true;
                     }
 
@@ -556,6 +557,7 @@ public:
         bool fakeDeath;
         EventMap events;
         InstanceScript* instance;
+        Player* playerWhoStartedAshbringer;
     };
 
     CreatureAI* GetAI(Creature* creature) const override
