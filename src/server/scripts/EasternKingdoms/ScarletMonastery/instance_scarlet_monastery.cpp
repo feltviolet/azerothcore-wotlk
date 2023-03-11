@@ -369,40 +369,48 @@ public:
                     mograine->StopMovingOnCurrentPos();
                     mograine->AI()->Talk(0);
                     return 4 * IN_MILLISECONDS;
-                case 6:
-                    me->SetStandState(UNIT_STAND_STATE_STAND);
-                    me->SetSheath(SHEATH_STATE_UNARMED);
-                    Talk(4, 2s);
-                    return 4 * IN_MILLISECONDS;
+            case 6:
+                me->SetFacingToObject(mograine);
+                return 0.2 * IN_MILLISECONDS;
                 case 7:
-                    me->SetSheath(SHEATH_STATE_MELEE);
-                    return 2 * IN_MILLISECONDS;
+                   me->SetStandState(UNIT_STAND_STATE_STAND);
+                return 1 * IN_MILLISECONDS;
                 case 8:
-                    mograine->AI()->Talk(1);
-                    return 3.7 * IN_MILLISECONDS;
+                     me->SetSheath(SHEATH_STATE_MELEE);
+                return 0.3 * IN_MILLISECONDS;
                 case 9:
-                    mograine->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
-                    return 3.7 * IN_MILLISECONDS;
+                     me->SetSheath(SHEATH_STATE_UNARMED);
+                Talk(4);
+                return 2 * IN_MILLISECONDS;
                 case 10:
-                    mograine->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
-                    return 2.3 * IN_MILLISECONDS;
+                me->SetSheath(SHEATH_STATE_MELEE);
+                return 4 * IN_MILLISECONDS;
                 case 11:
-                    mograine->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
-                    return 5.6 * IN_MILLISECONDS;
+                mograine->AI()->Talk(1, me);//Text needs to be displayed for about 10 seconds Modifying Duration in the database has no effect
+                return 2 * IN_MILLISECONDS;
                 case 12:
-                    Talk(5);
-                    return 4 * IN_MILLISECONDS;
+                mograine->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+                return 2 * IN_MILLISECONDS;
                 case 13:
-                    mograine->CastSpell(me, SPELL_FORGIVENESS, false);
-                    return 1.2 * IN_MILLISECONDS;
+                mograine->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+                return 3.7 * IN_MILLISECONDS;
                 case 14:
-                    mograine->CastSpell(me, SPELL_COSMETIC_CHAIN, true);
-                    return 0;
+                mograine->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+                return 2.5 * IN_MILLISECONDS;
                 case 15:
-                    mograine->AI()->Talk(2);
-                    mograine->DespawnOrUnsummon(5 * IN_MILLISECONDS);
-                    mograine->Kill(me, me, true);
-                    return 10 * IN_MILLISECONDS;
+                Talk(5);
+                return 2.5 * IN_MILLISECONDS;
+            case 16:
+                mograine->CastSpell(me, SPELL_FORGIVENESS, false);
+                return 1.2 * IN_MILLISECONDS;
+            case 17:
+                mograine->CastSpell(me, SPELL_COSMETIC_CHAIN, true);
+                return 1 * IN_MILLISECONDS;
+            case 18:
+                mograine->AI()->Talk(2);
+                mograine->DespawnOrUnsummon(5 * IN_MILLISECONDS);
+                mograine->Kill(me, me, true);
+                return 10 * IN_MILLISECONDS;
                 default:
                     if(mograine)
                         mograine->DespawnOrUnsummon(0);
@@ -514,7 +522,7 @@ public:
         void UpdateAI(uint32 diff) override
         {
             timer = timer - diff;
-            if (SayAshbringer && step < 17)
+            if (SayAshbringer && step <= 18)
             {
                 if (timer <= 0)
                 {
