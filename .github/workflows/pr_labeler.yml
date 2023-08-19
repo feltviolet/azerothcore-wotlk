@@ -4,6 +4,7 @@ on:
 
 jobs:
   triage:
+    if: github.repository != 'feltwitch/azerothcore-wotlk'
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/labeler@v3
