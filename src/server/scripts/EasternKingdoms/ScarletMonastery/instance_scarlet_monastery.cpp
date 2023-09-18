@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the AzerothCore Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,22 +21,31 @@
 #include "SmartAI.h"
 #include "scarletmonastery.h"
 
+// sniffed Position
+Position HighlordMograineSpawn = Position(1034.9252f, 1399.0653f, 27.393204f, 6.257956981658935546f);
+
 enum AshbringerEventMisc
 {
-    AURA_OF_ASHBRINGER              =   28282,
-    NPC_SCARLET_MYRIDON             =   4295,
-    NPC_SCARLET_DEFENDER            =   4298,
-    NPC_SCARLET_CENTURION           =   4301,
-    NPC_SCARLET_SORCERER            =   4294,
-    NPC_SCARLET_WIZARD              =   4300,
-    NPC_SCARLET_ABBOT               =   4303,
-    NPC_SCARLET_MONK                =   4540,
-    NPC_SCARLET_CHAMPION            =   4302,
-    NPC_SCARLET_CHAPLAIN            =   4299,
-    NPC_FAIRBANKS                   =   4542,
-    NPC_COMMANDER_MOGRAINE          =   3976,
-    NPC_INQUISITOR_WHITEMANE        =   3977,
-    DOOR_HIGH_INQUISITOR_ID         =   104600,
+    AURA_OF_ASHBRINGER = 28282,
+    NPC_SCARLET_MYRIDON = 4295,
+    NPC_SCARLET_DEFENDER = 4298,
+    NPC_SCARLET_CENTURION = 4301,
+    NPC_SCARLET_SORCERER = 4294,
+    NPC_SCARLET_WIZARD = 4300,
+    NPC_SCARLET_ABBOT = 4303,
+    NPC_SCARLET_MONK = 4540,
+    NPC_SCARLET_CHAMPION = 4302,
+    NPC_SCARLET_CHAPLAIN = 4299,
+    NPC_FAIRBANKS = 4542,
+    NPC_COMMANDER_MOGRAINE = 3976,
+    NPC_INQUISITOR_WHITEMANE = 3977,
+    DELAY_MS_KNEEL_MIN = 1000,
+    DELAY_MS_KNEEL_MAX = 3000,
+    DELAY_MS_TALK_MIN = 1000,
+    DELAY_MS_TALK_MAX = 2000,
+    DOOR_CHAPEL = 104591,
+    DOOR_HIGH_INQUISITOR_ID = 104600,
+    TALK_MOGRAINE_ASHBRBINGER_INTRO = 6,
 };
 
 enum DataTypes
@@ -71,56 +80,14 @@ public:
             SetHeaders(DataHeader);
         }
 
-        void OnPlayerEnter(Player* player) override
-        {
-            if (player->HasAura(AURA_OF_ASHBRINGER))
-            {
-                std::list<Creature*> ScarletList;
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_MYRIDON, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_DEFENDER, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CENTURION, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_SORCERER, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_WIZARD, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_ABBOT, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_MONK, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CHAMPION, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CHAPLAIN, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_COMMANDER_MOGRAINE, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_FAIRBANKS, 4000.0f);
-                if (!ScarletList.empty())
-                    for (std::list<Creature*>::iterator itr = ScarletList.begin(); itr != ScarletList.end(); itr++) (*itr)->SetFaction(FACTION_FRIENDLY);
-            }
-        }
-
-        void OnPlayerAreaUpdate(Player* player, uint32 /*oldArea*/, uint32 /*newArea*/) override
-        {
-            if (player->HasAura(AURA_OF_ASHBRINGER))
-            {
-                std::list<Creature*> ScarletList;
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_MYRIDON, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_DEFENDER, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CENTURION, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_SORCERER, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_WIZARD, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_ABBOT, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_MONK, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CHAMPION, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CHAPLAIN, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_COMMANDER_MOGRAINE, 4000.0f);
-                player->GetCreatureListWithEntryInGrid(ScarletList, NPC_FAIRBANKS, 4000.0f);
-                if (!ScarletList.empty())
-                    for (std::list<Creature*>::iterator itr = ScarletList.begin(); itr != ScarletList.end(); itr++) (*itr)->SetFaction(FACTION_FRIENDLY);
-            }
-        }
-
         void OnGameObjectCreate(GameObject* go) override
         {
             switch (go->GetEntry())
             {
                 //case ENTRY_PUMPKIN_SHRINE: PumpkinShrineGUID = go->GetGUID(); break;
-                case DOOR_HIGH_INQUISITOR_ID:
-                    DoorHighInquisitorGUID = go->GetGUID();
-                    break;
+            case DOOR_HIGH_INQUISITOR_ID:
+                DoorHighInquisitorGUID = go->GetGUID();
+                break;
             }
         }
 
@@ -128,36 +95,36 @@ public:
         {
             switch (creature->GetEntry())
             {
-                case NPC_COMMANDER_MOGRAINE:
-                    MograineGUID = creature->GetGUID();
-                    break;
-                case NPC_INQUISITOR_WHITEMANE:
-                    WhitemaneGUID = creature->GetGUID();
-                    break;
+            case NPC_COMMANDER_MOGRAINE:
+                MograineGUID = creature->GetGUID();
+                break;
+            case NPC_INQUISITOR_WHITEMANE:
+                WhitemaneGUID = creature->GetGUID();
+                break;
             }
         }
 
         void SetData(uint32 type, uint32 data) override
         {
-            switch(type)
+            switch (type)
             {
-                case TYPE_MOGRAINE_AND_WHITE_EVENT:
-                    if (data == IN_PROGRESS)
-                    {
-                        DoUseDoorOrButton(DoorHighInquisitorGUID);
-                        encounter = IN_PROGRESS;
-                    }
-                    if (data == FAIL)
-                    {
-                        DoUseDoorOrButton(DoorHighInquisitorGUID);
-                        encounter = FAIL;
-                    }
-                    if (data == SPECIAL)
-                        encounter = SPECIAL;
-                    break;
-                case DATA_HORSEMAN_EVENT:
-                    encounter = data;
-                    break;
+            case TYPE_MOGRAINE_AND_WHITE_EVENT:
+                if (data == IN_PROGRESS)
+                {
+                    DoUseDoorOrButton(DoorHighInquisitorGUID);
+                    encounter = IN_PROGRESS;
+                }
+                if (data == FAIL)
+                {
+                    DoUseDoorOrButton(DoorHighInquisitorGUID);
+                    encounter = FAIL;
+                }
+                if (data == SPECIAL)
+                    encounter = SPECIAL;
+                break;
+            case DATA_HORSEMAN_EVENT:
+                encounter = data;
+                break;
             }
         }
 
@@ -165,12 +132,12 @@ public:
         {
             switch (type)
             {
-                case DATA_MOGRAINE:
-                    return MograineGUID;
-                case DATA_WHITEMANE:
-                    return WhitemaneGUID;
-                case DATA_DOOR_WHITEMANE:
-                    return DoorHighInquisitorGUID;
+            case DATA_MOGRAINE:
+                return MograineGUID;
+            case DATA_WHITEMANE:
+                return WhitemaneGUID;
+            case DATA_DOOR_WHITEMANE:
+                return DoorHighInquisitorGUID;
             }
 
             return ObjectGuid::Empty;
@@ -192,12 +159,62 @@ public:
     };
 };
 
+class at_scarlet_monastery_cathedral_entrance : public OnlyOnceAreaTriggerScript
+{
+public:
+    at_scarlet_monastery_cathedral_entrance() : OnlyOnceAreaTriggerScript("at_scarlet_monastery_cathedral_entrance") {}
+
+    bool _OnTrigger(Player* player, AreaTrigger const* /*trigger*/) override
+    {
+        if (InstanceScript* instance = player->GetInstanceScript())
+        {
+            if (player->HasAura(AURA_OF_ASHBRINGER))
+            {
+                Creature* commanderMograine = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_MOGRAINE));
+                if (commanderMograine)
+                {
+                    std::list<Creature*> ScarletList;
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_MYRIDON, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_DEFENDER, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CENTURION, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_SORCERER, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_WIZARD, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_ABBOT, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_MONK, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CHAMPION, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_SCARLET_CHAPLAIN, 4000.0f);
+                    player->GetCreatureListWithEntryInGrid(ScarletList, NPC_FAIRBANKS, 4000.0f);
+
+                    ScarletList.push_back(commanderMograine);
+
+                    if (!ScarletList.empty())
+                    {
+                        for (std::list<Creature*>::iterator itr = ScarletList.begin(); itr != ScarletList.end(); itr++)
+                        {
+                            (*itr)->SetFaction(FACTION_FRIENDLY);
+                        }
+                    }
+                    if (commanderMograine->IsAlive())
+                        commanderMograine->AI()->Talk(TALK_MOGRAINE_ASHBRBINGER_INTRO);
+                    if (GameObject* chapelDoor = player->FindNearestGameObject(DOOR_CHAPEL, 4000.0f))
+                    {
+                        instance->DoUseDoorOrButton(chapelDoor->GetGUID());
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+
 enum ScarletMonasteryTrashMisc
 {
     SAY_WELCOME = 0,
     AURA_ASHBRINGER = 28282,
-    //FACTION_FRIENDLY_TO_ALL = 35,
-    NPC_HIGHLORD_MOGRAINE = 16440,
+    EFFECT_ASHBRINGER = 28441,
+    NPC_HIGHLORD_MOGRAINE = 16062,
+    MODEL_HIGHLORD_MOGRAINE = 16180,
     SPELL_COSMETIC_CHAIN = 45537,
     SPELL_COSMETIC_EXPLODE = 45935,
     SPELL_FORGIVENESS = 28697,
@@ -217,28 +234,34 @@ public:
             SayAshbringer = false;
         }
 
-        void MoveInLineOfSight(Unit* who) override
+        void SpellHit(Unit* who, SpellInfo const* spell) override
         {
-            if (who && who->GetDistance2d(me) < 12.0f)
+            if (who && spell->Id == EFFECT_ASHBRINGER && !SayAshbringer)
             {
-                if (Player* player = who->ToPlayer())
-                {
-                    if (player->HasAura(AURA_ASHBRINGER) && !SayAshbringer)
-                    {
-                        Talk(SAY_WELCOME);
-                        me->SetFaction(FACTION_FRIENDLY);
-                        me->SetSheath(SHEATH_STATE_UNARMED);
-                        me->SetFacingToObject(player);
-                        me->SetStandState(UNIT_STAND_STATE_KNEEL);
-                        me->AddAura(SPELL_AURA_MOD_ROOT, me);
-                        me->CastSpell(me, SPELL_AURA_MOD_ROOT, true);
-                        SayAshbringer = true;
-                    }
-                }
-            }
+                me->SetFaction(FACTION_FRIENDLY);
+                me->GetMotionMaster()->Clear(); // stop patrolling
+                me->GetMotionMaster()->MoveIdle();
+                me->StopMoving();
+                me->SetStandState(UNIT_STAND_STATE_STAND);
+                me->SetFacingToObject(who);
+                Milliseconds delayKneel(urand(DELAY_MS_KNEEL_MIN, DELAY_MS_KNEEL_MAX));
 
-            SmartAI::MoveInLineOfSight(who);
+                me->m_Events.AddEventAtOffset([this, who]()
+                    {
+                        me->SetSheath(SHEATH_STATE_UNARMED);
+                        me->SetStandState(UNIT_STAND_STATE_KNEEL);
+
+                        if (urand(0, 1))
+                        {
+                            Milliseconds delayTalk(urand(DELAY_MS_TALK_MIN, DELAY_MS_TALK_MAX));
+                            Talk(SAY_WELCOME, who, delayTalk);
+                        }
+                    }, delayKneel);
+
+                SayAshbringer = true;
+            }
         }
+
     private:
         bool SayAshbringer = false;
     };
@@ -247,6 +270,28 @@ public:
     {
         return GetScarletMonasteryAI<npc_scarlet_guardAI>(creature);
     }
+};
+
+enum AshbringerEvent
+{
+    EVENT_MOGRAINE_FACING_PLAYER = 1,
+    EVENT_MOGRAINE_KNEEL,
+    EVENT_MOGRAINE_EMOTE_TALK3,
+    EVENT_SUMMONED_HIGHLORD_MOGRAINE,
+    EVENT_HIGHLORD_MOGRAINE_MOVE_STOP,
+    EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE,
+    EVENT_MOGRAINE_UNIT_STAND_STATE_STAND,
+    EVENT_MOGRAINE_EMOTE_TALK4,
+    EVENT_HIGHLORD_MOGRAINE_EMOTE_TALK,
+    EVENT_HIGHLORD_MOGRAINE_EMOTE1,
+    EVENT_HIGHLORD_MOGRAINE_EMOTE2,
+    EVENT_HIGHLORD_MOGRAINE_EMOTE3,
+    EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE2,
+    EVENT_MOGRAINE_EMOTE_TALK5,
+    EVENT_HIGHLORD_MOGRAINE_CASTSPELL,
+    EVENT_MOGRAINE_CASTSPELL,
+    EVENT_HIGHLORD_MOGRAINE_KILL_MOGRAINE,
+    EVENT_ASHBRINGER_OVER
 };
 
 enum MograineEvents
@@ -278,23 +323,29 @@ enum Spells
     SPELL_DOMINATE_MIND             =   14515,
     SPELL_HOLY_SMITE                =   9481,
     SPELL_HEAL                      =   12039,
-    SPELL_POWER_WORD_SHIELD         =   22187
+    SPELL_POWER_WORD_SHIELD         =   22187,
+
+    // Highlord Mograine Spells
+    SPELL_MOGRAINE_COMETH_DND = 28688,
+
+    // SPELL_TRANSFORM_GHOST
+    SPELL_TRANSFORM_GHOST = 28443
 };
 
 enum Says
 {
     //Mograine says
-    SAY_MO_AGGRO                    =   0,
-    SAY_MO_KILL                     =   1,
-    SAY_MO_RESURRECTED              =   2,
+    SAY_MO_AGGRO = 0,
+    SAY_MO_KILL = 1,
+    SAY_MO_RESURRECTED = 2,
 
     //Whitemane says
-    SAY_WH_INTRO                    =   0,
-    SAY_WH_KILL                     =   1,
-    SAY_WH_RESURRECT                =   2,
+    SAY_WH_INTRO = 0,
+    SAY_WH_KILL = 1,
+    SAY_WH_RESURRECT = 2,
 };
 
-float const CATHEDRAL_PULL_RANGE    = 80.0f; // Distance from the Cathedral doors to where Mograine is standing
+float const CATHEDRAL_PULL_RANGE = 80.0f; // Distance from the Cathedral doors to where Mograine is standing
 
 class npc_mograine : public CreatureScript
 {
@@ -308,63 +359,107 @@ public:
             instance = creature->GetInstanceScript();
         }
 
-        uint32 AshbringerEvent(uint32 uiSteps)
+        void AshbringerEvent(uint32 eventId)
         {
-            Creature* mograine = me->FindNearestCreature(NPC_HIGHLORD_MOGRAINE, 200.0f);
+            Creature* summonedMograine = me->FindNearestCreature(NPC_HIGHLORD_MOGRAINE, 200.0f);
 
-            switch (uiSteps)
+            switch (eventId)
             {
-                case 1:
-                    me->GetMotionMaster()->MovePoint(0, 1152.039795f, 1398.405518f, 32.527878f);
-                    return 2 * IN_MILLISECONDS;
-                case 2:
-                    me->SetSheath(SHEATH_STATE_UNARMED);
-                    me->SetStandState(UNIT_STAND_STATE_KNEEL);
-                    return 2 * IN_MILLISECONDS;
-                case 3:
-                    Talk(3);
-                    return 10 * IN_MILLISECONDS;
-                case 4:
-                    me->SummonCreature(NPC_HIGHLORD_MOGRAINE, 1065.130737f, 1399.350586f, 30.763723f, 6.282961f, TEMPSUMMON_TIMED_DESPAWN, 400000)->SetName("Highlord Mograine");
-                    me->FindNearestCreature(NPC_HIGHLORD_MOGRAINE, 200.0f)->SetFaction(FACTION_FRIENDLY);
-                    return 30 * IN_MILLISECONDS;
-                case 5:
-                    mograine->StopMovingOnCurrentPos();
-                    mograine->AI()->Talk(0);
-                    mograine->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
-                    return 4 * IN_MILLISECONDS;
-                case 6:
-                    me->SetStandState(UNIT_STAND_STATE_STAND);
-                    return 2 * IN_MILLISECONDS;
-                case 7:
-                    Talk(4);
-                    return 4 * IN_MILLISECONDS;
-                case 8:
-                    mograine->AI()->Talk(1);
-                    return 11 * IN_MILLISECONDS;
-                case 9:
-                    mograine->HandleEmoteCommand(EMOTE_ONESHOT_BATTLE_ROAR);
-                    return 4 * IN_MILLISECONDS;
-                case 10:
-                    me->SetSheath(SHEATH_STATE_UNARMED);
-                    me->SetStandState(UNIT_STAND_STATE_KNEEL);
-                    Talk(5);
-                    return 2 * IN_MILLISECONDS;
-                case 11:
-                    mograine->CastSpell(me, SPELL_FORGIVENESS, false);
-                    return 1 * IN_MILLISECONDS;
-                case 12:
-                    mograine->CastSpell(me, SPELL_COSMETIC_CHAIN, true);
-                    return 0.5 * IN_MILLISECONDS;
-                case 13:
-                    mograine->AI()->Talk(2);
-                    mograine->DespawnOrUnsummon(3 * IN_MILLISECONDS);
-                    mograine->Kill(me, me, true);
-                    return 0;
-                default:
-                    if(mograine)
-                        mograine->DespawnOrUnsummon(0);
-                    return 0;
+            case  EVENT_MOGRAINE_FACING_PLAYER:
+                 me->SetFacingToObject(playerWhoStartedAshbringer);
+                events.ScheduleEvent(EVENT_MOGRAINE_KNEEL, 1s, 3s);
+                break;
+            case EVENT_MOGRAINE_KNEEL:
+                me->SetSheath(SHEATH_STATE_UNARMED);
+                me->SetStandState(UNIT_STAND_STATE_KNEEL);
+                events.ScheduleEvent(EVENT_MOGRAINE_EMOTE_TALK3, 1s, 2s);
+                break;
+            case EVENT_MOGRAINE_EMOTE_TALK3:
+                Talk(3, playerWhoStartedAshbringer);
+                break;
+            case EVENT_SUMMONED_HIGHLORD_MOGRAINE:
+                if (Creature* summonedMograine = me->SummonCreature(NPC_HIGHLORD_MOGRAINE, 1034.9252f, 1399.0653f, 27.393204f, 6.257956981658935546f, TEMPSUMMON_TIMED_DESPAWN, 400000))
+                {
+                    // 03/29/2023 00:13:49.658
+                    summonedMograine->SetFaction(FACTION_FRIENDLY);
+                    summonedMograine->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, EQUIP_UNEQUIP);  //No weapons are used
+                    summonedMograine->SetDisplayId(MODEL_HIGHLORD_MOGRAINE);
+                    //The movement speed in the video is the same as the player
+                    summonedMograine->SetSpeed(MOVE_WALK, 1.2f);
+                    summonedMograine->setActive(true);
+                    // Sniffing data shows the use of this spell transformation, but the dispersion effect of this spell is not seen in the video
+                    summonedMograine->CastSpell(me, SPELL_MOGRAINE_COMETH_DND, true); 
+                }
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_MOVE_STOP, 39546ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_MOVE_STOP:
+                summonedMograine->StopMovingOnCurrentPos();
+                summonedMograine->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+                summonedMograine->AI()->Talk(0, 214ms);
+                events.ScheduleEvent(EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE, 3024ms);
+                break;
+            case EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE:
+                me->SetFacingToObject(summonedMograine);
+                events.ScheduleEvent(EVENT_MOGRAINE_UNIT_STAND_STATE_STAND, 403ms);
+                break;
+            case EVENT_MOGRAINE_UNIT_STAND_STATE_STAND:
+                me->SetStandState(UNIT_STAND_STATE_STAND);
+                me->SetSheath(SHEATH_STATE_MELEE);
+                events.ScheduleEvent(EVENT_MOGRAINE_EMOTE_TALK4, 809ms);
+                break;
+            case EVENT_MOGRAINE_EMOTE_TALK4:
+                me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+                me->AI()->Talk(4, 209ms);
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_EMOTE_TALK, 4636ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_EMOTE_TALK:
+                summonedMograine->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+                summonedMograine->AI()->Talk(1, me, 10ms);
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_EMOTE1, 3429ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_EMOTE1:
+                summonedMograine->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_EMOTE2, 3236ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_EMOTE2:
+                summonedMograine->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_EMOTE3, 3243ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_EMOTE3:
+                summonedMograine->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+                events.ScheduleEvent(EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE2, 3232ms);
+                break;
+            case EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE2:  
+                me->SetFacingToObject(summonedMograine);
+                events.ScheduleEvent(EVENT_MOGRAINE_EMOTE_TALK5, 1210ms);
+                break;
+            case EVENT_MOGRAINE_EMOTE_TALK5:
+                me->SetSheath(SHEATH_STATE_UNARMED); 
+                me->HandleEmoteCommand(EMOTE_ONESHOT_BEG);
+                me->AI()->Talk(5, 214ms);
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_CASTSPELL, 3022ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_CASTSPELL:
+                summonedMograine->CastSpell(me, SPELL_FORGIVENESS, false);
+                events.ScheduleEvent(EVENT_MOGRAINE_CASTSPELL, 1000ms); // case 16 hack fix time
+                break;
+            case EVENT_MOGRAINE_CASTSPELL:
+                //Hacker fixes the visual effect of Moglien's lightning being hit by a spell that disappears immediately when he dies,
+                //and the visual effect of Blizzard that dies for a while
+                me->CastSpell(me, SPELL_COSMETIC_EXPLODE, true);//The visuals need to be fixed again
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_KILL_MOGRAINE, 100ms);
+                break;
+            case EVENT_HIGHLORD_MOGRAINE_KILL_MOGRAINE:           
+                summonedMograine->Kill(me, me, true);
+                summonedMograine->AI()->Talk(2, 2764ms);
+                summonedMograine->DespawnOrUnsummon(6190);
+                me->setActive(false);
+                break;
+            case  EVENT_ASHBRINGER_OVER:
+            default:
+                if (summonedMograine)
+                    summonedMograine->DespawnOrUnsummon(0);
+                break;
             }
         }
 
@@ -390,30 +485,12 @@ public:
             me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
             me->RemoveUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
             me->RemoveAurasDueToSpell(SPELL_PERMANENT_FEIGN_DEATH);
+            me->GetMotionMaster()->InitDefault();
             SayAshbringer = false;
-            timer = 0;
-            step = 1;
             hasDied = false;
             heal = false;
             fakeDeath = false;
             events.Reset();
-        }
-
-        void MoveInLineOfSight(Unit* who) override
-        {
-            if (who && who->GetDistance2d(me) < 15.0f)
-                if (Player* player = who->ToPlayer())
-                    if (player->HasAura(AURA_ASHBRINGER) && !SayAshbringer)
-                    {
-                        me->SetFaction(FACTION_FRIENDLY);
-                        me->SetSheath(SHEATH_STATE_UNARMED);
-                        me->SetStandState(UNIT_STAND_STATE_KNEEL);
-                        me->SetFacingToObject(player);
-                        // me->Yell(12389, LANG_UNIVERSAL, player); // Doesn't exist
-                        SayAshbringer = true;
-                    }
-
-            ScriptedAI::MoveInLineOfSight(who);
         }
 
         void JustEngagedWith(Unit* /*who*/) override
@@ -453,12 +530,14 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/) override
+        void KilledUnit(Unit* victim) override
         {
-            Talk(SAY_MO_KILL);
+            // Don't yell on death during Ashbringer event
+            if (victim->GetTypeId() == TYPEID_PLAYER && !SayAshbringer)
+                Talk(SAY_MO_KILL);
         }
 
-        void SpellHit(Unit* /*who*/, SpellInfo const* spell) override
+        void SpellHit(Unit* who, SpellInfo const* spell) override
         {
             //When hit with resurrection say text
             if (spell->Id == SPELL_SCARLET_RESURRECTION)
@@ -467,17 +546,28 @@ public:
                 fakeDeath = false;
                 instance->SetData(TYPE_MOGRAINE_AND_WHITE_EVENT, SPECIAL);
             }
+            else if (who && spell->Id == EFFECT_ASHBRINGER && !SayAshbringer)
+            {
+                me->SetFaction(FACTION_FRIENDLY);               
+                me->GetMotionMaster()->MoveIdle();
+                me->StopMoving();
+                playerWhoStartedAshbringer = who->ToPlayer();
+                SayAshbringer = true;
+                me->setActive(true);
+                events.ScheduleEvent(EVENT_MOGRAINE_FACING_PLAYER, 0ms);
+                //Face the target delay of 10ms, start summoning HIGHLORD_MOGRAINE,
+                events.ScheduleEvent(EVENT_SUMMONED_HIGHLORD_MOGRAINE, 10ms);
+            }
         }
 
         void UpdateAI(uint32 diff) override
         {
-            timer = timer - diff;
-            if (SayAshbringer && step < 15)
+            if (SayAshbringer)
             {
-                if (timer <= 0)
+                events.Update(diff);
+                while (uint32 eventId = events.ExecuteEvent())
                 {
-                    timer = AshbringerEvent(step);
-                    step++;
+                    AshbringerEvent(eventId);
                 }
             }
 
@@ -513,19 +603,19 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch(eventId)
+                switch (eventId)
                 {
-                    case EVENT_SPELL_CRUSADER_STRIKE:
-                        me->CastSpell(me->GetVictim(), SPELL_CRUSADER_STRIKE, true);
-                        events.ScheduleEvent(EVENT_SPELL_CRUSADER_STRIKE, 10s);
-                        break;
-                    case EVENT_SPELL_HAMMER_OF_JUSTICE:
-                        me->CastSpell(me->GetVictim(), SPELL_HAMMER_OF_JUSTICE, true);
-                        events.ScheduleEvent(EVENT_SPELL_HAMMER_OF_JUSTICE, 60s);
-                        break;
-                    case EVENT_PULL_CATHEDRAL:
-                        PullCathedral();
-                        break;
+                case EVENT_SPELL_CRUSADER_STRIKE:
+                    me->CastSpell(me->GetVictim(), SPELL_CRUSADER_STRIKE, true);
+                    events.ScheduleEvent(EVENT_SPELL_CRUSADER_STRIKE, 10s);
+                    break;
+                case EVENT_SPELL_HAMMER_OF_JUSTICE:
+                    me->CastSpell(me->GetVictim(), SPELL_HAMMER_OF_JUSTICE, true);
+                    events.ScheduleEvent(EVENT_SPELL_HAMMER_OF_JUSTICE, 60s);
+                    break;
+                case EVENT_PULL_CATHEDRAL:
+                    PullCathedral();
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -533,13 +623,12 @@ public:
 
     private:
         bool SayAshbringer = false;
-        int timer = 0;
-        int step = 1;
         bool hasDied;
         bool heal;
         bool fakeDeath;
         EventMap events;
         InstanceScript* instance;
+        Player* playerWhoStartedAshbringer;
     };
 
     CreatureAI* GetAI(Creature* creature) const override
@@ -658,17 +747,17 @@ public:
             {
                 switch (eventId)
                 {
-                    case EVENT_SPELL_POWER_WORLD_SHIELD:
-                        me->CastSpell(me, SPELL_POWER_WORD_SHIELD, false);
-                        events.ScheduleEvent(EVENT_SPELL_POWER_WORLD_SHIELD, 15s);
-                        break;
-                    case EVENT_SPELL_HOLY_SMITE:
-                        me->CastSpell(me->GetVictim(), SPELL_HOLY_SMITE, false);
-                        events.ScheduleEvent(EVENT_SPELL_HOLY_SMITE, 6s);
-                        break;
-                    case EVENT_SPELL_HEAL:
-                        me->CastSpell(me, SPELL_HEAL, false);
-                        break;
+                case EVENT_SPELL_POWER_WORLD_SHIELD:
+                    me->CastSpell(me, SPELL_POWER_WORD_SHIELD, false);
+                    events.ScheduleEvent(EVENT_SPELL_POWER_WORLD_SHIELD, 15s);
+                    break;
+                case EVENT_SPELL_HOLY_SMITE:
+                    me->CastSpell(me->GetVictim(), SPELL_HOLY_SMITE, false);
+                    events.ScheduleEvent(EVENT_SPELL_HOLY_SMITE, 6s);
+                    break;
+                case EVENT_SPELL_HEAL:
+                    me->CastSpell(me, SPELL_HEAL, false);
+                    break;
                 }
             }
 
@@ -694,7 +783,7 @@ class npc_fairbanks : public CreatureScript
 {
 public:
     npc_fairbanks() : CreatureScript("npc_fairbanks") { }
-
+    
     struct npc_fairbanksAI : public SmartAI
     {
         npc_fairbanksAI(Creature* creature) : SmartAI(creature) { }
@@ -711,10 +800,12 @@ public:
                     if (player->HasAura(AURA_ASHBRINGER) && !SayAshbringer)
                     {
                         me->SetFaction(FACTION_FRIENDLY);
-                        me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        me->CastSpell(me, 57767, true);
-                        me->SetDisplayId(16179);
                         me->SetFacingToObject(player);
+                        //sniffed ueed Delay 1615ms
+                        me->CastSpell(me, SPELL_TRANSFORM_GHOST, false);//Missing spell visuals
+                        me->CastSpell(me, 57767, true);//This is a hack fix for Spell 28443 that lacks Blizzard-like spell visuals
+                        me->SetDisplayId(16179);
+                        me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
                         SayAshbringer = true;
                     }
 
@@ -737,4 +828,5 @@ void AddSC_instance_scarlet_monastery()
     new npc_fairbanks();
     new npc_mograine();
     new boss_high_inquisitor_whitemane();
+    new at_scarlet_monastery_cathedral_entrance();
 }
