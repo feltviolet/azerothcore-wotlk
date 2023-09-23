@@ -21,8 +21,8 @@
 #include "SmartAI.h"
 #include "scarletmonastery.h"
 
-// sniffed Position
-Position HighlordMograineSpawn = Position(1034.9252f, 1399.0653f, 27.393204f, 6.257956981658935546f);
+ // sniffed Position
+Position const HighlordMograineSpawn{ 1033.4642f, 1399.1022f, 27.337427f, 6.257956981658935546f };
 
 enum AshbringerEventMisc
 {
@@ -59,8 +59,8 @@ enum DataTypes
     DATA_HORSEMAN_EVENT             =   5,
     GAMEOBJECT_PUMPKIN_SHRINE       =   6,
 
-    DATA_VORREL                     =   7,
-    DATA_ARCANIST_DOAN              =   8
+    DATA_VORREL = 7,
+    DATA_ARCANIST_DOAN = 8
 };
 
 class instance_scarlet_monastery : public InstanceMapScript
@@ -303,9 +303,9 @@ enum MograineEvents
 
 enum WhitemaneEvents
 {
-    EVENT_SPELL_HOLY_SMITE          =   1,
-    EVENT_SPELL_POWER_WORLD_SHIELD  =   2,
-    EVENT_SPELL_HEAL                =   3
+    EVENT_SPELL_HOLY_SMITE = 1,
+    EVENT_SPELL_POWER_WORLD_SHIELD = 2,
+    EVENT_SPELL_HEAL = 3
 };
 
 enum Spells
@@ -366,7 +366,7 @@ public:
             switch (eventId)
             {
             case  EVENT_MOGRAINE_FACING_PLAYER:
-                 me->SetFacingToObject(playerWhoStartedAshbringer);
+                me->SetFacingToObject(playerWhoStartedAshbringer);
                 events.ScheduleEvent(EVENT_MOGRAINE_KNEEL, 1s, 3s);
                 break;
             case EVENT_MOGRAINE_KNEEL:
@@ -378,19 +378,18 @@ public:
                 Talk(3, playerWhoStartedAshbringer);
                 break;
             case EVENT_SUMMONED_HIGHLORD_MOGRAINE:
-                if (Creature* summonedMograine = me->SummonCreature(NPC_HIGHLORD_MOGRAINE, 1034.9252f, 1399.0653f, 27.393204f, 6.257956981658935546f, TEMPSUMMON_TIMED_DESPAWN, 400000))
+                if (Creature* summonedMograine = me->SummonCreature(NPC_HIGHLORD_MOGRAINE, HighlordMograineSpawn, TEMPSUMMON_TIMED_DESPAWN, 400000))
                 {
-                    // 03/29/2023 00:13:49.658
                     summonedMograine->SetFaction(FACTION_FRIENDLY);
                     summonedMograine->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, EQUIP_UNEQUIP);  //No weapons are used
                     summonedMograine->SetDisplayId(MODEL_HIGHLORD_MOGRAINE);
                     //The movement speed in the video is the same as the player
-                    summonedMograine->SetSpeed(MOVE_WALK, 1.2f);
-                    summonedMograine->setActive(true);
+                    summonedMograine->SetSpeed(MOVE_WALK, 1.0f);
                     // Sniffing data shows the use of this spell transformation, but the dispersion effect of this spell is not seen in the video
-                    summonedMograine->CastSpell(me, SPELL_MOGRAINE_COMETH_DND, true); 
+                    summonedMograine->CastSpell(me, SPELL_MOGRAINE_COMETH_DND, false);
                 }
-                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_MOVE_STOP, 39546ms);
+                // 03/29/2023 00:13:49.658-00:14:38.204
+                events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_MOVE_STOP, 48546ms);
                 break;
             case EVENT_HIGHLORD_MOGRAINE_MOVE_STOP:
                 summonedMograine->StopMovingOnCurrentPos();
@@ -429,12 +428,12 @@ public:
                 summonedMograine->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                 events.ScheduleEvent(EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE2, 3232ms);
                 break;
-            case EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE2:  
+            case EVENT_MOGRAINE_FACING_HIGHLORD_MOGRAINE2:
                 me->SetFacingToObject(summonedMograine);
                 events.ScheduleEvent(EVENT_MOGRAINE_EMOTE_TALK5, 1210ms);
                 break;
             case EVENT_MOGRAINE_EMOTE_TALK5:
-                me->SetSheath(SHEATH_STATE_UNARMED); 
+                me->SetSheath(SHEATH_STATE_UNARMED);
                 me->HandleEmoteCommand(EMOTE_ONESHOT_BEG);
                 me->AI()->Talk(5, 214ms);
                 events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_CASTSPELL, 3022ms);
@@ -449,16 +448,12 @@ public:
                 me->CastSpell(me, SPELL_COSMETIC_EXPLODE, true);//The visuals need to be fixed again
                 events.ScheduleEvent(EVENT_HIGHLORD_MOGRAINE_KILL_MOGRAINE, 100ms);
                 break;
-            case EVENT_HIGHLORD_MOGRAINE_KILL_MOGRAINE:           
+            case EVENT_HIGHLORD_MOGRAINE_KILL_MOGRAINE:
                 summonedMograine->Kill(me, me, true);
                 summonedMograine->AI()->Talk(2, 2764ms);
                 summonedMograine->DespawnOrUnsummon(6190);
-                me->setActive(false);
                 break;
-            case  EVENT_ASHBRINGER_OVER:
             default:
-                if (summonedMograine)
-                    summonedMograine->DespawnOrUnsummon(0);
                 break;
             }
         }
@@ -485,12 +480,13 @@ public:
             me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
             me->RemoveUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
             me->RemoveAurasDueToSpell(SPELL_PERMANENT_FEIGN_DEATH);
-            me->GetMotionMaster()->InitDefault();
-            SayAshbringer = false;
+            if (Creature* summonedMograine = me->FindNearestCreature(NPC_HIGHLORD_MOGRAINE, 200.0f))
+                summonedMograine->DespawnOrUnsummon();
+            events.Reset();            
             hasDied = false;
             heal = false;
             fakeDeath = false;
-            events.Reset();
+            SayAshbringer = false;
         }
 
         void JustEngagedWith(Unit* /*who*/) override
@@ -548,7 +544,7 @@ public:
             }
             else if (who && spell->Id == EFFECT_ASHBRINGER && !SayAshbringer)
             {
-                me->SetFaction(FACTION_FRIENDLY);               
+                me->SetFaction(FACTION_FRIENDLY);
                 me->GetMotionMaster()->MoveIdle();
                 me->StopMoving();
                 playerWhoStartedAshbringer = who->ToPlayer();
@@ -783,7 +779,7 @@ class npc_fairbanks : public CreatureScript
 {
 public:
     npc_fairbanks() : CreatureScript("npc_fairbanks") { }
-    
+
     struct npc_fairbanksAI : public SmartAI
     {
         npc_fairbanksAI(Creature* creature) : SmartAI(creature) { }
